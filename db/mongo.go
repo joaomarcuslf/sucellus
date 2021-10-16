@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	configs "github.com/joaomarcuslf/sucellus/configs"
+	definitions "github.com/joaomarcuslf/sucellus/definitions"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -12,9 +13,10 @@ import (
 type MongoConnection struct {
 	client        *mongo.Client
 	clientOptions *options.ClientOptions
+	database      string
 }
 
-func NewMongoConnection(config configs.DatabaseConfig) DatabaseClient {
+func NewMongoConnection(config configs.DatabaseConfig) definitions.DatabaseClient {
 	uri := fmt.Sprintf(
 		"mongodb://%s:%s@%s:%s/%s?authSource=admin&ssl=false&&authMechanism=SCRAM-SHA-256",
 		config.Username,
@@ -28,11 +30,12 @@ func NewMongoConnection(config configs.DatabaseConfig) DatabaseClient {
 
 	return &MongoConnection{
 		clientOptions: clientOptions,
+		database:      config.Database,
 	}
 }
 
-func (c *MongoConnection) Collection(database, collection string) (*mongo.Collection, error) {
-	return c.client.Database(database).Collection(collection), nil
+func (c *MongoConnection) Collection(collection string) (*mongo.Collection, error) {
+	return c.client.Database(c.database).Collection(collection), nil
 }
 func (c *MongoConnection) Connect(ctx context.Context) error {
 	client, err := mongo.Connect(ctx, c.clientOptions)

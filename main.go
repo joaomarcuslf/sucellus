@@ -5,6 +5,7 @@ import (
 
 	configs "github.com/joaomarcuslf/sucellus/configs"
 	db "github.com/joaomarcuslf/sucellus/db"
+	"github.com/joaomarcuslf/sucellus/server"
 	"github.com/joho/godotenv"
 )
 
@@ -13,11 +14,16 @@ func main() {
 
 	c := configs.GetConfig()
 
-	mongo := db.NewMongoConnection(c.Database)
+	server := server.NewServer(c.Port)
+	connection := db.NewMongoConnection(c.Database)
 
 	ctx := context.Background()
 
-	mongo.Connect(ctx)
+	connection.Connect(ctx)
 
-	defer mongo.Close(ctx)
+	defer connection.Close(ctx)
+
+	go db.Migrate(connection)
+
+	server.Run()
 }
