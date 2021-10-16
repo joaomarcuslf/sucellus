@@ -2,18 +2,22 @@ package server
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/joaomarcuslf/sucellus/definitions"
 	handlers "github.com/joaomarcuslf/sucellus/handlers"
-	api "github.com/joaomarcuslf/sucellus/handlers/api"
-	service "github.com/joaomarcuslf/sucellus/handlers/api/service"
+	api_handlers "github.com/joaomarcuslf/sucellus/handlers/api"
+	service_handlers "github.com/joaomarcuslf/sucellus/handlers/api/service"
+	middlewares "github.com/joaomarcuslf/sucellus/middlewares"
 )
 
 type Server struct {
-	Port string
+	Port       string
+	connection definitions.DatabaseClient
 }
 
-func NewServer(port string) *Server {
+func NewServer(port string, connection definitions.DatabaseClient) *Server {
 	return &Server{
-		Port: port,
+		Port:       port,
+		connection: connection,
 	}
 }
 
@@ -22,37 +26,22 @@ func (a *Server) Run() {
 
 	router.Use(gin.Logger())
 
-	router.GET("/", func(c *gin.Context) {
-		handlers.Index(c)
-	})
+	router.GET("/", handlers.Index)
 
 	api_routes := router.Group("/api")
 	{
-		api_routes.GET("/health", func(c *gin.Context) {
-			api.Health(c)
-		})
+		api_routes.Use(middlewares.JSONContent())
+		api_routes.GET("/health", api_handlers.Health)
 
 		service_routes := api_routes.Group("/services")
 		{
-			service_routes.GET("/", func(c *gin.Context) {
-				service.List(c)
-			})
+			service := service_handlers.NewServiceHandler(a.connection)
 
-			service_routes.POST("/", func(c *gin.Context) {
-				service.Create(c)
-			})
-
-			service_routes.GET("/:id", func(c *gin.Context) {
-				service.Get(c)
-			})
-
-			service_routes.PUT("/:id", func(c *gin.Context) {
-				service.Update(c)
-			})
-
-			service_routes.DELETE("/:id", func(c *gin.Context) {
-				service.Delete(c)
-			})
+			service_routes.GET("/", service.List)
+			service_routes.POST("/", service.Create)
+			service_routes.GET("/:id", service.Get)
+			service_routes.PUT("/:id", service.Update)
+			service_routes.DELETE("/:id", service.Delete)
 		}
 	}
 

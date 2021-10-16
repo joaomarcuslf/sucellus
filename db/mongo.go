@@ -6,6 +6,7 @@ import (
 
 	configs "github.com/joaomarcuslf/sucellus/configs"
 	definitions "github.com/joaomarcuslf/sucellus/definitions"
+	errors "github.com/joaomarcuslf/sucellus/errors"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -41,7 +42,7 @@ func (c *MongoConnection) Connect(ctx context.Context) error {
 	client, err := mongo.Connect(ctx, c.clientOptions)
 
 	if err != nil {
-		return err
+		return errors.FormatError("MONGO_ERROR", "Connection refused", err)
 	}
 
 	c.client = client
@@ -53,5 +54,11 @@ func (c *MongoConnection) Connect(ctx context.Context) error {
 
 func (c *MongoConnection) Close(ctx context.Context) error {
 	fmt.Println("Disconnecting from MongoDB!")
-	return c.client.Disconnect(ctx)
+	err := c.client.Disconnect(ctx)
+
+	if err != nil {
+		return errors.FormatError("MONGO_ERROR", "Error disconnecting from MongoDB", err)
+	}
+
+	return nil
 }

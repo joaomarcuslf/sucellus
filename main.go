@@ -14,8 +14,9 @@ func main() {
 
 	c := configs.GetConfig()
 
-	server := server.NewServer(c.Port)
 	connection := db.NewMongoConnection(c.Database)
+
+	server := server.NewServer(c.Port, connection)
 
 	ctx := context.Background()
 
@@ -23,7 +24,7 @@ func main() {
 
 	defer connection.Close(ctx)
 
-	go db.Migrate(connection)
+	go db.Migrate(ctx, connection)
 
 	server.Run()
 }

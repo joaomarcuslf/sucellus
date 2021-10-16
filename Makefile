@@ -9,6 +9,24 @@ test:
 build:
 	go build main.go
 
+build-service:
+	docker pull mongo
+
+	docker run -d --name service-sucellus \
+		-p 27017:27017 \
+		-e PORT=4000 \
+		--restart=always \
+		.
+
+	docker stop mongo-sucellus
+
+start-service:
+	docker start service-sucellus
+
+
+stop-service:
+	docker stop service-sucellus
+
 build-mongo:
 	docker pull mongo
 
