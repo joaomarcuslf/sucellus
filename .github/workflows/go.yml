@@ -1,0 +1,42 @@
+name: go
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+
+jobs:
+  ci:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        go: [ '1.16' ]
+
+    steps:
+      - name: Checkout 🛎
+        uses: actions/checkout@master
+
+      - name: Setup Go env 🏗
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go }}
+
+      - name: Install dependencies 👨🏻‍💻
+        run: |
+          go mod download
+
+      - name: Run build 👀
+        run: |
+          make build
+
+      - name: Run tests 🧪
+        run: |
+          make test
