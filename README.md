@@ -28,10 +28,14 @@ I use my RaspberryPi to run some of my personal projects, like a cloud platform,
 Or, you can run by doing this:
 
 ```sh
+make build-mongo # Only once
+
+make start-mongo
+
 make dev
 ```
 
-You must set the Twitter tokens.
+You must always start mongo while in dev.
 
 ## Running Tests
 
