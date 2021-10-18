@@ -16,11 +16,11 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-type Service struct {
+type ServiceRepository struct {
 	collection *mongo.Collection
 }
 
-func NewServiceRepository(connection definitions.DatabaseClient) *Service {
+func NewServiceRepository(connection definitions.DatabaseClient) *ServiceRepository {
 	collection, err := connection.Collection("services")
 
 	if err != nil {
@@ -33,13 +33,13 @@ func NewServiceRepository(connection definitions.DatabaseClient) *Service {
 		)
 	}
 
-	return &Service{
+	return &ServiceRepository{
 		collection,
 	}
 }
 
-func (r *Service) Query(ctx context.Context, filter bson.M) ([]models.Service, error) {
-	var services []models.Service
+func (r *ServiceRepository) Query(ctx context.Context, filter bson.M) ([]models.Service, error) {
+	var aux []models.Service
 
 	cur, err := r.collection.Find(ctx, filter)
 
@@ -65,7 +65,7 @@ func (r *Service) Query(ctx context.Context, filter bson.M) ([]models.Service, e
 			)
 		}
 
-		services = append(services, service)
+		aux = append(aux, service)
 	}
 
 	if err := cur.Err(); err != nil {
@@ -76,69 +76,16 @@ func (r *Service) Query(ctx context.Context, filter bson.M) ([]models.Service, e
 		)
 	}
 
-	return services, nil
+	return aux, nil
 }
 
-func (r *Service) Insert(ctx context.Context, model models.Service) error {
+func (r *ServiceRepository) Insert(ctx context.Context, model models.Service) error {
 	_, err := r.collection.InsertOne(ctx, model)
 
-	return errors.FormatError(
-		"REPOSITORY_ERROR",
-		"(ServiceRepository) Could not insert new value",
-		err,
-	)
-}
-
-func (r *Service) Get(ctx context.Context, id string) (models.Service, error) {
-	var service models.Service
-
-	uid, _ := primitive.ObjectIDFromHex(id)
-
-	err := r.collection.FindOne(ctx, bson.M{"_id": uid}).Decode(&service)
-
-	if err != nil {
-		return models.Service{}, errors.FormatError(
-			"REPOSITORY_ERROR",
-			"(ServiceRepository) Could not Find item",
-			err,
-		)
-	}
-
-	return service, nil
-}
-
-func (r *Service) Create(ctx context.Context, body io.Reader) error {
-	var service models.Service
-
-	err := json.NewDecoder(body).Decode(&service)
-
 	if err != nil {
 		return errors.FormatError(
 			"REPOSITORY_ERROR",
-			"(ServiceRepository) Error during decode",
-			err,
-		)
-	}
-
-	err = r.Validate(ctx, service)
-
-	if err != nil {
-		return errors.FormatError(
-			"REPOSITORY_ERROR",
-			"(ServiceRepository) Validation error:",
-			err,
-		)
-	}
-
-	service.CreatedDate.Time = time.Now()
-	service.UpdatedDate.Time = time.Now()
-
-	err = r.Insert(ctx, service)
-
-	if err != nil {
-		return errors.FormatError(
-			"REPOSITORY_ERROR",
-			"(ServiceRepository) Insertion error",
+			"(ServiceRepository) Could not insert new value",
 			err,
 		)
 	}
@@ -146,24 +93,10 @@ func (r *Service) Create(ctx context.Context, body io.Reader) error {
 	return nil
 }
 
-func (r *Service) Update(ctx context.Context, id string, body io.Reader) error {
-	var service models.Service
+func (r *ServiceRepository) Set(ctx context.Context, uid primitive.ObjectID, model models.Service) error {
+	model.UpdatedDate.Time = time.Now()
 
-	uid, _ := primitive.ObjectIDFromHex(id)
-
-	err := json.NewDecoder(body).Decode(&service)
-
-	if err != nil {
-		return errors.FormatError(
-			"REPOSITORY_ERROR",
-			"(ServiceRepository) Error during decode",
-			err,
-		)
-	}
-
-	service.UpdatedDate.Time = time.Now()
-
-	_, err = r.collection.UpdateOne(ctx, bson.M{"_id": uid}, bson.M{"$set": service})
+	_, err := r.collection.UpdateOne(ctx, bson.M{"_id": uid}, bson.M{"$set": model})
 
 	if err != nil {
 		return errors.FormatError(
@@ -176,7 +109,94 @@ func (r *Service) Update(ctx context.Context, id string, body io.Reader) error {
 	return nil
 }
 
-func (r *Service) Delete(ctx context.Context, id string) error {
+func (r *ServiceRepository) Get(ctx context.Context, id string) (models.Service, error) {
+	var aux models.Service
+
+	uid, _ := primitive.ObjectIDFromHex(id)
+
+	err := r.collection.FindOne(ctx, bson.M{"_id": uid}).Decode(&aux)
+
+	if err != nil {
+		return models.Service{}, errors.FormatError(
+			"REPOSITORY_ERROR",
+			"(ServiceRepository) Could not Find item",
+			err,
+		)
+	}
+
+	return aux, nil
+}
+
+func (r *ServiceRepository) Create(ctx context.Context, body io.Reader) (models.Service, error) {
+	var aux models.Service
+
+	err := json.NewDecoder(body).Decode(&aux)
+
+	if err != nil {
+		return models.Service{}, errors.FormatError(
+			"REPOSITORY_ERROR",
+			"(ServiceRepository) Error during decode",
+			err,
+		)
+	}
+
+	err = r.Validate(ctx, aux)
+
+	if err != nil {
+		return models.Service{}, errors.FormatError(
+			"REPOSITORY_ERROR",
+			"(ServiceRepository) Validation error:",
+			err,
+		)
+	}
+
+	aux.CreatedDate.Time = time.Now()
+	aux.UpdatedDate.Time = time.Now()
+
+	aux.UName = fmt.Sprintf("%s-%s", aux.Name, aux.CreatedDate.Time.Format("20060102150405"))
+
+	err = r.Insert(ctx, aux)
+
+	if err != nil {
+		return models.Service{}, errors.FormatError(
+			"REPOSITORY_ERROR",
+			"(ServiceRepository) Insertion error",
+			err,
+		)
+	}
+
+	err = r.collection.FindOne(ctx, bson.M{"u_name": aux.UName}).Decode(&aux)
+
+	if err != nil {
+		return models.Service{}, errors.FormatError(
+			"REPOSITORY_ERROR",
+			"(ServiceRepository) Insertion error",
+			err,
+		)
+	}
+
+	return aux, nil
+}
+
+func (r *ServiceRepository) Update(ctx context.Context, id string, body io.Reader) error {
+	var aux models.Service
+
+	uid, _ := primitive.ObjectIDFromHex(id)
+
+	err := json.NewDecoder(body).Decode(&aux)
+
+	if err != nil {
+		return errors.FormatError(
+			"REPOSITORY_ERROR",
+			"(ServiceRepository) Error during decode",
+			err,
+		)
+	}
+
+	return r.Set(ctx, uid, aux)
+}
+
+func (r *ServiceRepository) Delete(ctx context.Context, id string) error {
 	uid, _ := primitive.ObjectIDFromHex(id)
 
 	_, err := r.collection.DeleteOne(ctx, bson.M{"_id": uid})
@@ -192,7 +212,7 @@ func (r *Service) Delete(ctx context.Context, id string) error {
 	return nil
 }
 
-func (r *Service) Validate(ctx context.Context, model models.Service) error {
+func (r *ServiceRepository) Validate(ctx context.Context, model models.Service) error {
 	if model.Name == "" {
 		return fmt.Errorf("FieldValidation: [Name] is required")
 	}

@@ -6,4 +6,4 @@ vendor/
 __debug_bin
 main
 
-./services
+.services/

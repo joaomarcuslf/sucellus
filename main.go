@@ -2,9 +2,13 @@ package main
 
 import (
 	"context"
+	"log"
+	"os"
+	"os/signal"
 
 	configs "github.com/joaomarcuslf/sucellus/configs"
 	db "github.com/joaomarcuslf/sucellus/db"
+	"github.com/joaomarcuslf/sucellus/run"
 	"github.com/joaomarcuslf/sucellus/server"
 	"github.com/joho/godotenv"
 )
@@ -12,19 +16,34 @@ import (
 func main() {
 	godotenv.Load()
 
-	c := configs.GetConfig()
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
 
-	connection := db.NewMongoConnection(c.Database)
+	config := configs.GetConfig()
 
-	server := server.NewServer(c.Port, connection)
+	connection := db.NewMongoConnection(config.Database)
 
-	ctx := context.Background()
+	server := server.NewServer(config.Port, connection)
+
+	ctx, _ := context.WithCancel(context.Background())
 
 	connection.Connect(ctx)
 
-	defer connection.Close(ctx)
+	// defer run.StopServices(ctx, connection)
+	// defer connection.Close(ctx)
 
 	go db.Migrate(ctx, connection)
+	go run.StartServices(ctx, connection)
+
+	go func() {
+		oscall := <-c
+		log.Printf("Stopping server from action: %+v", oscall)
+
+		run.StopServices(ctx, connection)
+		connection.Close(ctx)
+
+		os.Exit(0)
+	}()
 
 	server.Run()
 }

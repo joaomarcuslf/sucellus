@@ -8,11 +8,25 @@ var ErrorEmum = map[string]string{
 	"REPOSITORY_ERROR": "error: Error in repository execution",
 }
 
-func FormatError(errorId, message string, additionalError error) error {
-	return fmt.Errorf(
+type SystemError struct {
+	Type    string
+	Message string
+	Err     error
+}
+
+func (e *SystemError) Error() string {
+	return fmt.Sprintf(
 		"%s\n  Message: %s\n  Err:\n    %s",
-		ErrorEmum[errorId],
-		message,
-		additionalError.Error(),
+		ErrorEmum[e.Type],
+		e.Message,
+		e.Err.Error(),
 	)
+}
+
+func FormatError(errorId, message string, additionalError error) error {
+	return &SystemError{
+		Type:    errorId,
+		Message: message,
+		Err:     additionalError,
+	}
 }

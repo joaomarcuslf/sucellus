@@ -6,11 +6,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joaomarcuslf/sucellus/definitions"
 	"github.com/joaomarcuslf/sucellus/repositories"
+	"github.com/joaomarcuslf/sucellus/run"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
 type ServiceHandler struct {
-	repository *repositories.Service
+	repository *repositories.ServiceRepository
 }
 
 func NewServiceHandler(connection definitions.DatabaseClient) *ServiceHandler {
@@ -35,7 +36,7 @@ func (s *ServiceHandler) List(c *gin.Context) {
 }
 
 func (s *ServiceHandler) Create(c *gin.Context) {
-	err := s.repository.Create(c, c.Request.Body)
+	data, err := s.repository.Create(c, c.Request.Body)
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -44,10 +45,11 @@ func (s *ServiceHandler) Create(c *gin.Context) {
 		return
 	}
 
+	go run.CreateService(c, s.repository, data)
+
 	c.JSON(http.StatusCreated, gin.H{
-		"message": "Created",
+		"data": data,
 	})
-	return
 }
 
 func (s *ServiceHandler) Get(c *gin.Context) {
@@ -89,15 +91,14 @@ func (s *ServiceHandler) Update(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "Updated",
-		"data":    data,
+		"data": data,
 	})
 }
 
 func (s *ServiceHandler) Delete(c *gin.Context) {
 	id := c.Param("id")
 
-	_, err := s.repository.Get(c, id)
+	data, err := s.repository.Get(c, id)
 
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
@@ -105,6 +106,8 @@ func (s *ServiceHandler) Delete(c *gin.Context) {
 		})
 		return
 	}
+
+	go run.DeleteService(s.repository, data)
 
 	err = s.repository.Delete(c, id)
 
@@ -115,7 +118,5 @@ func (s *ServiceHandler) Delete(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Deleted",
-	})
+	c.JSON(http.StatusOK, gin.H{})
 }
