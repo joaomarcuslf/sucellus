@@ -41,17 +41,17 @@ func StopServices(ctx context.Context, connection definitions.DatabaseClient) er
 	}
 
 	for _, s := range services {
-		aux = s
+		aux = s.(models.Service)
 
-		path = fmt.Sprintf(".services/%s", s.UName)
+		path = fmt.Sprintf(".services/%s", aux.UName)
 
-		fmt.Printf("Running stop-service for %s\n", s.UName)
+		fmt.Printf("Running stop-service for %s\n", aux.UName)
 		cmd := exec.Command("make", "stop-service")
 		cmd.Dir = path
 		output, _ := cmd.CombinedOutput()
 
 		aux.Status = "STOPPED"
-		repository.Set(ctx, s.ID, aux)
+		repository.Set(ctx, aux.ID, aux)
 
 		content := string(output)
 

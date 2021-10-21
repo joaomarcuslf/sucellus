@@ -7,13 +7,13 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/joaomarcuslf/sucellus/definitions"
 	"github.com/joaomarcuslf/sucellus/models"
-	"github.com/joaomarcuslf/sucellus/repositories"
 	dockerfile "github.com/joaomarcuslf/sucellus/templates/dockerfile"
 	makefile "github.com/joaomarcuslf/sucellus/templates/makefile"
 )
 
-func CreateService(ctx context.Context, repository *repositories.ServiceRepository, service models.Service) error {
+func CreateService(ctx context.Context, repository definitions.Repository, service models.Service) error {
 	var aux models.Service
 
 	dw := dockerfile.NewGoTemplate()

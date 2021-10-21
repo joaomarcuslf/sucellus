@@ -41,17 +41,17 @@ func StartServices(ctx context.Context, connection definitions.DatabaseClient) e
 	}
 
 	for _, s := range services {
-		aux = s
+		aux = s.(models.Service)
 
-		path = fmt.Sprintf(".services/%s", s.UName)
+		path = fmt.Sprintf(".services/%s", aux.UName)
 
-		fmt.Printf("Running start-service for %s\n", s.UName)
+		fmt.Printf("Running start-service for %s\n", aux.UName)
 		cmd := exec.Command("make", "start-service")
 		cmd.Dir = path
 		output, _ := cmd.CombinedOutput()
 
 		aux.Status = "RUNNING"
-		repository.Set(ctx, s.ID, aux)
+		repository.Set(ctx, aux.ID, aux)
 
 		content := string(output)
 

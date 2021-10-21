@@ -29,9 +29,6 @@ func main() {
 
 	connection.Connect(ctx)
 
-	// defer run.StopServices(ctx, connection)
-	// defer connection.Close(ctx)
-
 	go db.Migrate(ctx, connection)
 	go run.StartServices(ctx, connection)
 

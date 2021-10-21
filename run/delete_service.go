@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"os/exec"
 
+	"github.com/joaomarcuslf/sucellus/definitions"
 	"github.com/joaomarcuslf/sucellus/models"
-	"github.com/joaomarcuslf/sucellus/repositories"
 )
 
-func DeleteService(repository *repositories.ServiceRepository, service models.Service) error {
+func DeleteService(repository definitions.Repository, service models.Service) error {
 	path := ".services"
 
 	path += "/" + service.UName

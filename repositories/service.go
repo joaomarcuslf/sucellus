@@ -20,7 +20,7 @@ type ServiceRepository struct {
 	collection *mongo.Collection
 }
 
-func NewServiceRepository(connection definitions.DatabaseClient) *ServiceRepository {
+func NewServiceRepository(connection definitions.DatabaseClient) definitions.Repository {
 	collection, err := connection.Collection("services")
 
 	if err != nil {
@@ -38,13 +38,13 @@ func NewServiceRepository(connection definitions.DatabaseClient) *ServiceReposit
 	}
 }
 
-func (r *ServiceRepository) Query(ctx context.Context, filter bson.M) ([]models.Service, error) {
-	var aux []models.Service
+func (r *ServiceRepository) Query(ctx context.Context, filter bson.M) ([]interface{}, error) {
+	var aux []interface{}
 
 	cur, err := r.collection.Find(ctx, filter)
 
 	if err != nil {
-		return []models.Service{}, errors.FormatError(
+		return nil, errors.FormatError(
 			"REPOSITORY_ERROR",
 			"(ServiceRepository) Could not Find element",
 			err,
@@ -58,7 +58,7 @@ func (r *ServiceRepository) Query(ctx context.Context, filter bson.M) ([]models.
 		err := cur.Decode(&service)
 
 		if err != nil {
-			return []models.Service{}, errors.FormatError(
+			return nil, errors.FormatError(
 				"REPOSITORY_ERROR",
 				"(ServiceRepository) Error during decode",
 				err,
@@ -69,7 +69,7 @@ func (r *ServiceRepository) Query(ctx context.Context, filter bson.M) ([]models.
 	}
 
 	if err := cur.Err(); err != nil {
-		return []models.Service{}, errors.FormatError(
+		return nil, errors.FormatError(
 			"REPOSITORY_ERROR",
 			"(ServiceRepository) Cursor error",
 			err,
@@ -79,8 +79,8 @@ func (r *ServiceRepository) Query(ctx context.Context, filter bson.M) ([]models.
 	return aux, nil
 }
 
-func (r *ServiceRepository) Insert(ctx context.Context, model models.Service) error {
-	_, err := r.collection.InsertOne(ctx, model)
+func (r *ServiceRepository) Insert(ctx context.Context, model interface{}) error {
+	_, err := r.collection.InsertOne(ctx, model.(models.Service))
 
 	if err != nil {
 		return errors.FormatError(
@@ -93,23 +93,7 @@ func (r *ServiceRepository) Insert(ctx context.Context, model models.Service) er
 	return nil
 }
 
-func (r *ServiceRepository) Set(ctx context.Context, uid primitive.ObjectID, model models.Service) error {
-	model.UpdatedDate.Time = time.Now()
-
-	_, err := r.collection.UpdateOne(ctx, bson.M{"_id": uid}, bson.M{"$set": model})
-
-	if err != nil {
-		return errors.FormatError(
-			"REPOSITORY_ERROR",
-			"(ServiceRepository) Update error",
-			err,
-		)
-	}
-
-	return nil
-}
-
-func (r *ServiceRepository) Get(ctx context.Context, id string) (models.Service, error) {
+func (r *ServiceRepository) Get(ctx context.Context, id string) (interface{}, error) {
 	var aux models.Service
 
 	uid, _ := primitive.ObjectIDFromHex(id)
@@ -127,13 +111,31 @@ func (r *ServiceRepository) Get(ctx context.Context, id string) (models.Service,
 	return aux, nil
 }
 
-func (r *ServiceRepository) Create(ctx context.Context, body io.Reader) (models.Service, error) {
+func (r *ServiceRepository) Set(ctx context.Context, uid primitive.ObjectID, model interface{}) error {
+	aux := model.(models.Service)
+
+	aux.UpdatedDate.Time = time.Now()
+
+	_, err := r.collection.UpdateOne(ctx, bson.M{"_id": uid}, bson.M{"$set": aux})
+
+	if err != nil {
+		return errors.FormatError(
+			"REPOSITORY_ERROR",
+			"(ServiceRepository) Update error",
+			err,
+		)
+	}
+
+	return nil
+}
+
+func (r *ServiceRepository) Create(ctx context.Context, body io.Reader) (interface{}, error) {
 	var aux models.Service
 
 	err := json.NewDecoder(body).Decode(&aux)
 
 	if err != nil {
-		return models.Service{}, errors.FormatError(
+		return nil, errors.FormatError(
 			"REPOSITORY_ERROR",
 			"(ServiceRepository) Error during decode",
 			err,
@@ -143,7 +145,7 @@ func (r *ServiceRepository) Create(ctx context.Context, body io.Reader) (models.
 	err = r.Validate(ctx, aux)
 
 	if err != nil {
-		return models.Service{}, errors.FormatError(
+		return nil, errors.FormatError(
 			"REPOSITORY_ERROR",
 			"(ServiceRepository) Validation error:",
 			err,
@@ -158,7 +160,7 @@ func (r *ServiceRepository) Create(ctx context.Context, body io.Reader) (models.
 	err = r.Insert(ctx, aux)
 
 	if err != nil {
-		return models.Service{}, errors.FormatError(
+		return nil, errors.FormatError(
 			"REPOSITORY_ERROR",
 			"(ServiceRepository) Insertion error",
 			err,
@@ -168,7 +170,7 @@ func (r *ServiceRepository) Create(ctx context.Context, body io.Reader) (models.
 	err = r.collection.FindOne(ctx, bson.M{"u_name": aux.UName}).Decode(&aux)
 
 	if err != nil {
-		return models.Service{}, errors.FormatError(
+		return nil, errors.FormatError(
 			"REPOSITORY_ERROR",
 			"(ServiceRepository) Insertion error",
 			err,
@@ -212,34 +214,36 @@ func (r *ServiceRepository) Delete(ctx context.Context, id string) error {
 	return nil
 }
 
-func (r *ServiceRepository) Validate(ctx context.Context, model models.Service) error {
-	if model.Name == "" {
+func (r *ServiceRepository) Validate(ctx context.Context, model interface{}) error {
+	aux := model.(models.Service)
+
+	if aux.Name == "" {
 		return fmt.Errorf("FieldValidation: [Name] is required")
 	}
 
-	if model.Url == "" {
+	if aux.Url == "" {
 		return fmt.Errorf("FieldValidation: [Url] is required")
 	}
 
-	if model.Port == 0 {
+	if aux.Port == 0 {
 		return fmt.Errorf("FieldValidation: [Port] is required")
 	}
 
-	if model.Language == "" {
+	if aux.Language == "" {
 		return fmt.Errorf("FieldValidation: [Language] is required")
 	}
 
-	if string(model.Port) == os.Getenv("PORT") {
+	if string(aux.Port) == os.Getenv("PORT") {
 		return fmt.Errorf("FieldValidation: [Port] is already in use")
 	}
 
-	if model.PoolingInterval <= 100 {
+	if aux.PoolingInterval <= 100 {
 		return fmt.Errorf("FieldValidation: [PoolingInterval] must be bigger than 100")
 	}
 
-	services, _ := r.Query(ctx, bson.M{"port": model.Port})
+	services, _ := r.Query(ctx, bson.M{"port": aux.Port})
 
-	if len(services) > 0 && services[0].ID != model.ID {
+	if len(services) > 0 && services[0].(models.Service).ID != aux.ID {
 		return fmt.Errorf("FieldValidation: [Port] is already in use")
 	}
 

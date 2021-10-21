@@ -5,13 +5,14 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joaomarcuslf/sucellus/definitions"
+	"github.com/joaomarcuslf/sucellus/models"
 	"github.com/joaomarcuslf/sucellus/repositories"
 	"github.com/joaomarcuslf/sucellus/run"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
 type ServiceHandler struct {
-	repository *repositories.ServiceRepository
+	repository definitions.Repository
 }
 
 func NewServiceHandler(connection definitions.DatabaseClient) *ServiceHandler {
@@ -45,7 +46,7 @@ func (s *ServiceHandler) Create(c *gin.Context) {
 		return
 	}
 
-	go run.CreateService(c, s.repository, data)
+	go run.CreateService(c, s.repository, data.(models.Service))
 
 	c.JSON(http.StatusCreated, gin.H{
 		"data": data,
@@ -107,7 +108,7 @@ func (s *ServiceHandler) Delete(c *gin.Context) {
 		return
 	}
 
-	go run.DeleteService(s.repository, data)
+	go run.DeleteService(s.repository, data.(models.Service))
 
 	err = s.repository.Delete(c, id)
 
