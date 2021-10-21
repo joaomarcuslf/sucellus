@@ -1,0 +1,1 @@
+var notyf = new Notyf();

@@ -13,11 +13,13 @@ import (
 
 type ServiceHandler struct {
 	repository definitions.Repository
+	connection definitions.DatabaseClient
 }
 
 func NewServiceHandler(connection definitions.DatabaseClient) *ServiceHandler {
 	return &ServiceHandler{
 		repository: repositories.NewServiceRepository(connection),
+		connection: connection,
 	}
 }
 
@@ -111,6 +113,32 @@ func (s *ServiceHandler) Delete(c *gin.Context) {
 	go run.DeleteService(s.repository, data.(models.Service))
 
 	err = s.repository.Delete(c, id)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{})
+}
+
+func (s *ServiceHandler) Start(c *gin.Context) {
+	err := run.StartServices(c, s.connection)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{})
+}
+
+func (s *ServiceHandler) Stop(c *gin.Context) {
+	err := run.StopServices(c, s.connection)
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{

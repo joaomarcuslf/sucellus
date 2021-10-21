@@ -26,6 +26,9 @@ func (a *Server) Run() {
 
 	router.Use(gin.Logger())
 
+	router.Static("/static", "./static")
+	router.LoadHTMLGlob("templates/*.html")
+
 	router.GET("/", handlers.Index)
 
 	api_routes := router.Group("/api")
@@ -42,6 +45,9 @@ func (a *Server) Run() {
 			service_routes.GET("/:id", service.Get)
 			service_routes.PUT("/:id", service.Update)
 			service_routes.DELETE("/:id", service.Delete)
+
+			service_routes.POST("/start", service.Start)
+			service_routes.POST("/stop", service.Stop)
 		}
 	}
 
