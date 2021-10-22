@@ -1,37 +1,9 @@
 <html>
 
-<head>
-  <title>{{.Title}}</title>
-  <meta charset="utf-8" />
-  <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=6.0">
-  <meta name="robot" content="all">
-  <meta name="rating" content="general">
-  <meta name="distribution" content="global">
-  <meta name="language" content="en">
-  <meta name="robots" content="index,follow">
-
-  <meta name="theme-color" content="#5f163a">
-
-  <link rel="apple-touch-icon" href="/static/icon.png">
-  <meta property="og:image" content="/static/icon.png">
-
-  <meta name="description" content="{{.Description}}">
-  <meta property="og:description_safe" content="{{.Description}}" />
-
-  <meta property="og:title" content="{{.Title}}" />
-  <meta property="twitter:title" content="{{.Title}}" />
-
-  <meta name="author" content="@joaomarcuslf">
-
-  <link rel="shortcut icon" href="/static/icon.png" />
-  <link rel="stylesheet" type="text/css" href="/static/css/main.css" />
-</head>
+{{ template "globals/header" .}}
 
 <body>
   <section class="hero is-purple is-light is-fullheight">
-
     <div class="hero-body is-align-items-flex-start">
       <div class="container">
         <div class="columns is-centered is-multiline">
@@ -43,7 +15,7 @@
 
           <div class="column is-10 is-flex is-justify-content-flex-end">
             <label class="switch">
-              <input id="poolingInput" type="checkbox" checked>
+              <input id="poolingInput" type="checkbox" checked="true">
 
               <span class="slider round"></span>
             </label>
@@ -82,9 +54,10 @@
     </div>
   </section>
 
-  <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
-  <script src="/static/js/helpers/toastr.js"></script>
-  <script src="/static/js/helpers/http.js"></script>
+  {{ template "globals/loader" .}}
+
+  {{ template "globals/scripts" .}}
+
   <script src="/static/js/list-services.js"></script>
 </body>
 

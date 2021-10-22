@@ -1,0 +1,112 @@
+<html>
+
+{{ template "globals/header" .}}
+
+<body>
+  <section class="hero is-purple is-light is-fullheight">
+    <div class="hero-body is-align-items-flex-start">
+      <div class="container">
+        <div class="columns is-centered is-multiline">
+          <div class="column is-10">
+            <h1 class="title is-1">
+              Show Service:
+            </h1>
+          </div>
+
+          <div class="column is-10">
+            <div class="box">
+              <div class="field is-grouped">
+                <div id="name" class="control">
+                  <label for="name" class="label has-text-left">Name</label>
+
+                  <div class="control">
+                    {{ .Service.Name }}
+                  </div>
+                </div>
+
+                <div id="url" class="control is-expanded">
+                  <label for="url" class="label has-text-left">Git URL</label>
+
+                  <div class="control">
+                    {{ .Service.Url }}
+                  </div>
+                </div>
+              </div>
+
+              <div class="field is-grouped">
+                <div id="port" class="control">
+                  <label for="port" class="label has-text-left">Port</label>
+
+                  <div class="control">
+                    {{ .Service.Port }}
+                  </div>
+                </div>
+
+                <div id="language" class="control">
+                  <label for="" class="label has-text-left">Language</label>
+
+                  <div class="control">
+                    {{ .Service.Language }}
+                  </div>
+                </div>
+
+                <div id="poolinginterval" class="control">
+                  <label for="pooling_interval" class="label has-text-left">Pooling Interval</label>
+
+                  <div class="control">
+                    {{ .Service.PoolingInterval }}
+                  </div>
+                </div>
+              </div>
+
+
+              <div id="envvars" class="field">
+                <label for="envvars" class="label has-text-left">Env vars</label>
+
+                <div class="control">
+                  <div class="tags is-multiline">
+                    {{ range $key, $value := .Service.EnvVars }}
+                      <span class="tag is-light">{{ $key }}={{ $value }};</span>
+                    {{ end }}
+                  </div>
+                </div>
+              </div>
+
+              <div class="field has-text-right">
+                <button id="backBtn" class="button is-purple is-rounded is-medium">
+                  Back
+                </button>
+
+                {{ if eq .Service.Status "RUNNING" }}
+                  <button id="stopBtn" class="button is-warning is-rounded is-medium">
+                    Stop
+                  </button>
+                {{ else }}
+                  <button id="startBtn" class="button is-success is-rounded is-medium">
+                    Start
+                  </button>
+                {{ end }}
+
+                <button id="updateBtn" class="button is-info is-rounded is-medium">
+                  Update
+                </button>
+
+                <button id="deleteBtn" class="button is-danger is-rounded is-medium">
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {{ template "globals/loader" .}}
+
+  {{ template "globals/scripts" .}}
+
+  <script src="/static/js/show-service.js"></script>
+</body>
+
+</html>

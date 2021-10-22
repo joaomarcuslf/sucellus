@@ -1,0 +1,112 @@
+<html>
+
+{{ template "globals/header" .}}
+
+<body>
+  <section class="hero is-purple is-light is-fullheight">
+    <div class="hero-body is-align-items-flex-start">
+      <div class="container">
+        <div class="columns is-centered is-multiline">
+          <div class="column is-10">
+            <h1 class="title is-1">
+              Create Service:
+            </h1>
+          </div>
+
+          <div class="column is-10">
+            <form id="createServiceForm" action="#" method="post" class="box">
+              <div class="field is-grouped">
+                <div id="name" class="control">
+                  <label for="name" class="label has-text-left">Name</label>
+
+                  <div class="control">
+                    <input class="input" placeholder="My service" name="name" />
+                  </div>
+
+                  <p class="help is-danger has-text-right"></p>
+                </div>
+
+                <div id="url" class="control is-expanded">
+                  <label for="url" class="label has-text-left">Git URL</label>
+
+                  <div class="control">
+                    <input class="input" placeholder="https://github.com/user/repo" name="url" />
+                  </div>
+
+                  <p class="help is-danger has-text-right"></p>
+                </div>
+              </div>
+
+              <div class="field is-grouped">
+                <div id="port" class="control">
+                  <label for="port" class="label has-text-left">Port</label>
+
+                  <div class="control">
+                    <input class="input" placeholder="5000" name="port" type="number" />
+                  </div>
+
+                  <p class="help is-danger has-text-right"></p>
+                </div>
+
+                <div id="language" class="control">
+                  <label for="" class="label has-text-left">Language</label>
+
+                  <div class="control">
+                    <div class="select is-fullwidth">
+                      <select name="language">
+                        <option value="" disabled selected>Select Language</option>
+                        <option value="go">Go</option>
+                        <option value="js">JavaScript</option>
+                        <option value="ruby">Ruby</option>
+                        <option value="python">Python</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <p class="help is-danger has-text-right"></p>
+                </div>
+
+                <div id="poolinginterval" class="control">
+                  <label for="pooling_interval" class="label has-text-left">Pooling Interval</label>
+
+                  <div class="control">
+                    <input class="input" placeholder="5000" name="pooling_interval" type="number" />
+                  </div>
+
+                  <p class="help is-danger has-text-right"></p>
+                </div>
+              </div>
+
+
+              <div id="envvars" class="field">
+                <label for="envvars" class="label has-text-left">Env vars</label>
+
+                <div class="control">
+                  <textarea name="envvars" class="textarea" rows="10">PORT=1000;
+BASE_URL=http://localhost:5000;
+                  </textarea>
+                </div>
+
+                <p class="help is-danger has-text-right"></p>
+              </div>
+
+              <div class="field has-text-right">
+                <button class="button is-purple is-rounded is-medium">
+                  Create
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {{ template "globals/loader" .}}
+
+  {{ template "globals/scripts" .}}
+
+  <script src="/static/js/add-service.js"></script>
+</body>
+
+</html>

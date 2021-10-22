@@ -124,7 +124,37 @@ func (s *ServiceHandler) Delete(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
-func (s *ServiceHandler) Start(c *gin.Context) {
+func (s *ServiceHandler) StartService(c *gin.Context) {
+	id := c.Param("id")
+
+	err := run.StartService(c, s.connection, id)
+
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{})
+}
+
+func (s *ServiceHandler) StopService(c *gin.Context) {
+	id := c.Param("id")
+
+	err := run.StopService(c, s.connection, id)
+
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{})
+}
+
+func (s *ServiceHandler) StartServices(c *gin.Context) {
 	err := run.StartServices(c, s.connection)
 
 	if err != nil {
@@ -137,7 +167,7 @@ func (s *ServiceHandler) Start(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
-func (s *ServiceHandler) Stop(c *gin.Context) {
+func (s *ServiceHandler) StopServices(c *gin.Context) {
 	err := run.StopServices(c, s.connection)
 
 	if err != nil {

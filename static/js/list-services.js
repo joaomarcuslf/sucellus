@@ -1,7 +1,7 @@
-var template = ({ name, url, port, language, pooling_interval, status }) => {
+var template = ({ name, url, port, language, pooling_interval, status, _id }) => {
   return `
   <tr>
-    <td>${name}</td>
+    <th><a href="/services/${_id}" target="blank">${name}</a></th>
     <td><a href="${url}" target="blank">${url}</a></td>
     <td>${port}</td>
     <td>${language}</td>

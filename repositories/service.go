@@ -145,11 +145,7 @@ func (r *ServiceRepository) Create(ctx context.Context, body io.Reader) (interfa
 	err = r.Validate(ctx, aux)
 
 	if err != nil {
-		return nil, errors.FormatError(
-			"REPOSITORY_ERROR",
-			"(ServiceRepository) Validation error:",
-			err,
-		)
+		return nil, err
 	}
 
 	aux.CreatedDate.Time = time.Now()
@@ -218,33 +214,61 @@ func (r *ServiceRepository) Validate(ctx context.Context, model interface{}) err
 	aux := model.(models.Service)
 
 	if aux.Name == "" {
-		return fmt.Errorf("FieldValidation: [Name] is required")
+		return errors.FormatError(
+			"VALIDATION_ERROR",
+			"FieldName: [Name]",
+			fmt.Errorf("FieldValidation: [Name] is required"),
+		)
 	}
 
 	if aux.Url == "" {
-		return fmt.Errorf("FieldValidation: [Url] is required")
+		return errors.FormatError(
+			"VALIDATION_ERROR",
+			"FieldName: [Url]",
+			fmt.Errorf("FieldValidation: [Url] is required"),
+		)
 	}
 
 	if aux.Port == 0 {
-		return fmt.Errorf("FieldValidation: [Port] is required")
+		return errors.FormatError(
+			"VALIDATION_ERROR",
+			"FieldName: [Port]",
+			fmt.Errorf("FieldValidation: [Port] is required"),
+		)
 	}
 
 	if aux.Language == "" {
-		return fmt.Errorf("FieldValidation: [Language] is required")
+		return errors.FormatError(
+			"VALIDATION_ERROR",
+			"FieldName: [Language]",
+			fmt.Errorf("FieldValidation: [Language] is required"),
+		)
 	}
 
 	if string(aux.Port) == os.Getenv("PORT") {
-		return fmt.Errorf("FieldValidation: [Port] is already in use")
+		return errors.FormatError(
+			"VALIDATION_ERROR",
+			"FieldName: [Port]",
+			fmt.Errorf("FieldValidation: [Port] is already in use"),
+		)
 	}
 
 	if aux.PoolingInterval <= 100 {
-		return fmt.Errorf("FieldValidation: [PoolingInterval] must be bigger than 100")
+		return errors.FormatError(
+			"VALIDATION_ERROR",
+			"FieldName: [PoolingInterval]",
+			fmt.Errorf("FieldValidation: [PoolingInterval] must be bigger than 100"),
+		)
 	}
 
 	services, _ := r.Query(ctx, bson.M{"port": aux.Port})
 
 	if len(services) > 0 && services[0].(models.Service).ID != aux.ID {
-		return fmt.Errorf("FieldValidation: [Port] is already in use")
+		return errors.FormatError(
+			"VALIDATION_ERROR",
+			"FieldName: [PoolingInterval]",
+			fmt.Errorf("FieldValidation: [Port] is already in use"),
+		)
 	}
 
 	return nil

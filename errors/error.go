@@ -1,11 +1,14 @@
 package errors
 
-import "fmt"
+import (
+	"fmt"
+)
 
 var ErrorEmum = map[string]string{
 	"MONGO_ERROR":      "error: Mongo Error",
 	"MIGRATION_ERROR":  "error: Migration could not be completed",
 	"REPOSITORY_ERROR": "error: Error in repository execution",
+	"VALIDATION_ERROR": "error: Error in some input",
 }
 
 type SystemError struct {
