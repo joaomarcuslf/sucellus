@@ -17,6 +17,10 @@ type MongoConnection struct {
 	database      string
 }
 
+type MongoCollection struct {
+	collection *mongo.Collection
+}
+
 func NewMongoConnection(config configs.DatabaseConfig) definitions.DatabaseClient {
 	uri := fmt.Sprintf(
 		"mongodb://%s:%s@%s:%s/%s?authSource=admin&ssl=false&&authMechanism=SCRAM-SHA-256",
@@ -35,9 +39,14 @@ func NewMongoConnection(config configs.DatabaseConfig) definitions.DatabaseClien
 	}
 }
 
-func (c *MongoConnection) Collection(collection string) (*mongo.Collection, error) {
-	return c.client.Database(c.database).Collection(collection), nil
+func (c *MongoConnection) Collection(collection string) (definitions.Collection, error) {
+	col := c.client.Database(c.database).Collection(collection)
+
+	return &MongoCollection{
+		collection: col,
+	}, nil
 }
+
 func (c *MongoConnection) Connect(ctx context.Context) error {
 	client, err := mongo.Connect(ctx, c.clientOptions)
 
@@ -61,4 +70,24 @@ func (c *MongoConnection) Close(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func (m *MongoCollection) InsertOne(ctx context.Context, model interface{}) (interface{}, error) {
+	return m.collection.InsertOne(ctx, model)
+}
+
+func (m *MongoCollection) UpdateOne(ctx context.Context, filter interface{}, model interface{}) (interface{}, error) {
+	return m.collection.UpdateOne(ctx, filter, model)
+}
+
+func (m *MongoCollection) DeleteOne(ctx context.Context, model interface{}) (interface{}, error) {
+	return m.collection.DeleteOne(ctx, model)
+}
+
+func (m *MongoCollection) FindOne(ctx context.Context, filter interface{}) definitions.SingleResult {
+	return m.collection.FindOne(ctx, filter)
+}
+
+func (m *MongoCollection) Find(ctx context.Context, filter interface{}) (definitions.Cursor, error) {
+	return m.collection.Find(ctx, filter)
 }

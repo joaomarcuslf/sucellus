@@ -13,11 +13,10 @@ import (
 	"github.com/joaomarcuslf/sucellus/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type ServiceRepository struct {
-	collection *mongo.Collection
+	collection definitions.Collection
 }
 
 func NewServiceRepository(connection definitions.DatabaseClient) definitions.Repository {
