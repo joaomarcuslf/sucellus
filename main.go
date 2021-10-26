@@ -21,7 +21,7 @@ func main() {
 
 	config := configs.GetConfig()
 
-	connection := db.NewMongoConnection(config.Database)
+	connection := db.NewDbConnection(config.Database)
 
 	server := server.NewServer(config.Port, connection)
 
