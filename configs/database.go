@@ -6,4 +6,5 @@ type DatabaseConfig struct {
 	Url      string
 	Port     string
 	Database string
+	Driver   string
 }

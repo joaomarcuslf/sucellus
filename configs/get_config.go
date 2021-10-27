@@ -16,6 +16,7 @@ func GetConfig() *AppConfig {
 			Url:      os.Getenv("DB_URL"),
 			Port:     os.Getenv("DB_PORT"),
 			Database: os.Getenv("DB_DATABASE"),
+			Driver:   os.Getenv("DB_DRIVER"),
 		},
 	}
 }
